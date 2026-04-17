@@ -1,12 +1,19 @@
 import random
 import json
+import time
 import os
+from rich.text import Text
 from rich.live import Live
 from rich.table import Table
 from rich.console import Console
+
+from prompt_toolkit import PromptSession
+from prompt_toolkit.history import InMemoryHistory
+
 from pathlib import Path
 
 console = Console()
+session = PromptSession(history=InMemoryHistory()) #type:ignore
 
 BASE_DIR = Path(__file__).parent
 
@@ -34,45 +41,22 @@ def main():
 
     print_board(board, symbol)
 
-    while(game_continue):
-        console.clear()
+    with Live(make_board_table(board, move_count), console=console, auto_refresh=False) as live:
+        while True:
+            live.stop()
+            try:
+                cmd = session.prompt("指し手 > ")
+            except (KeyboardInterrupt, EOFError):
+                break
+            live.start()
 
-        x_p = int(input("choose your peice x:"))
-        y_p = int(input("choose your peice y:"))
+            if cmd.strip() == "quit":
+                break
 
-        piece = (x_p, y_p)
+            live.update(make_board_table(board, move_count, last_move))
+            live.refresh()
 
-        x_h = int(input("type your hand x:"))
-        y_h = int(input("type your hand y:"))
-
-        hand = (x_h, y_h)
-
-        print(piece, hand)
-
-        print_board(board, symbol)
-
-def print_board(board, symbol):
-    """盤面と持ち駒をテキストで描画"""
-    print()
-    # print("tegoma_g : ", end=" ")
-    # for p in get_holdedpieces("second_hand"):  # 後手の持ち駒
-    #     print(symbol[str(p)], end=" ")
-    print("\n")
-
-    print("1  2  3  4  5  6  7  8  9")
-    for y in range(9):               # 0..8
-        row = []
-        for x in range(9):
-            row.append(symbol[str(board[y][x])])
-        print(" ".join(row), y+1)
-    print()
-
-    # print("tegoma_s : ", end="")
-    # for p in get_holdedpieces("first_hand"):  # 先手の持ち駒
-    #     print(symbol[str(p)], end=" ")
-    print("\n")
-
-def make_board_table(board, move_count):
+def make_board_table(board, move_count, last_move=None):
     table = Table(
         title=f"手番: {move_count}",
         show_header=True,
@@ -88,7 +72,10 @@ def make_board_table(board, move_count):
     # 行ラベル
     row_labels = "一二三四五六七八九"
 
-    for i, row in enumerate(board)
+    for i, row in enumerate(board):
+        table.add_row(row_labels[i], *row)
+    
+    return Table
 
 
 if __name__ == "__main__":
