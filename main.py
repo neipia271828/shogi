@@ -72,6 +72,23 @@ def print_board(board, symbol):
     #     print(symbol[str(p)], end=" ")
     print("\n")
 
+def make_board_table(board, move_count):
+    table = Table(
+        title=f"手番: {move_count}",
+        show_header=True,
+        header_style="bold",
+        show_lines=True,
+    )
+
+    #列ヘッダー (9 ~ 1)
+    table.add_column("", justify="center", width=2)
+    for col in "9 8 7 6 5 4 3 2 1":
+        table.add_column(col, justify="center", width=2)
+
+    # 行ラベル
+    row_labels = "一二三四五六七八九"
+
+    for i, row in enumerate(board)
 
 
 if __name__ == "__main__":
