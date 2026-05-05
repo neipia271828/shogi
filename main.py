@@ -1,15 +1,36 @@
 from dataclasses import dataclass
 import math
 
-# 歩   10
-# 香車 20
-# 桂馬 30
-# 銀  40
+# 歩   10 FU
+# と   11 TO
+# 香車 20 KY
+# 成香 21 NY
+# 桂馬 30 KE
+# 成佳 31 NK
+# 銀  40 GI
+# 成銀41 NG
 # 金  50
 # 角  60
-# 飛車70
-# 王  80
-
+# 馬  61 UM
+# 飛車70 HI
+# 竜  71 RY
+# 王  80 OU
+[
+    ("FU", 10),
+    ("TO", 11),
+    ("KY", 20),
+    ("NY", 21),
+    ("KE", 30),
+    ("NK", 31),
+    ("GI", 40),
+    ("NG", 41),
+    ("KI", 50),
+    ("KA", 60),
+    ("UM", 61),
+    ("HI", 70),
+    ("RY", 71),
+    ("OU", 80),
+]
 class Shogi():
     class Board:
         board : list = [[ 20,  30,  40,  50,  80,  50,  40,  30,  20],
@@ -152,6 +173,22 @@ class Shogi():
             self.ryu    = Shogi.MoveVerificator(True,  True,  False, [[1, 1, 1], [1, 0, 1], [1, 1, 1]], [[0, 1, 0], [1, 0, 1], [0, 1, 0]]).verification
             self.ou     = Shogi.MoveVerificator(True,  False, False, [[1, 1, 1], [1, 0, 1], [1, 1, 1]], None).verification
 
+    class BiDict:
+        def __init__(self, li : list):
+            self.forward : dict = {}
+            for d in li:
+                self.forward[d[0]] = d[1]
+            
+            self.reverse : dict = {}
+            for d in li:
+                self.reverse[d[1]] = d[0]
+        
+        def get_by_value(self, key):
+            return self.reverse[key]
+        
+        def get_by_key(self, key):
+            return self.forward[key]
+        
     def __init__(self):
         self.board = Shogi.Board()
         self.capture_pieces = [[], []]
@@ -161,6 +198,23 @@ class Shogi():
         self.destination_cell = Shogi.Piece()
 
         self.verificator = Shogi.Verificator()
+
+        self.symbol_dict = Shogi.BiDict([
+                                            ("FU", 10),
+                                            ("TO", 11),
+                                            ("KY", 20),
+                                            ("NY", 21),
+                                            ("KE", 30),
+                                            ("NK", 31),
+                                            ("GI", 40),
+                                            ("NG", 41),
+                                            ("KI", 50),
+                                            ("KA", 60),
+                                            ("UM", 61),
+                                            ("HI", 70),
+                                            ("RY", 71),
+                                            ("OU", 80),
+                                        ])
 
     def make_hand(self, csa : str) -> bool:
         hand = list(csa)
