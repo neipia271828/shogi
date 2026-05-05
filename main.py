@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import math
 
 # 歩   10
 # 香車 20
@@ -153,7 +154,7 @@ class Shogi():
 
     def __init__(self):
         self.board = Shogi.Board()
-        self.capture_piece = [[], []]
+        self.capture_pieces = [[], []]
         self.turn = 1
 
         self.start_cell = Shogi.Piece()
@@ -238,6 +239,21 @@ class Shogi():
             case 80:
                 return self.verificator.ou(self)
 
+    def apply_capture(self):
+        capture_piece = self.board.get_piece_from_destination_cell(self)
+        if capture_piece != 0:
+            if self.get_side():
+                self.capture_pieces[0].append(int(math.copysign(
+                                                                (capture_piece + 1 if abs(capture_piece) % 10 == 1 else capture_piece),
+                                                                1
+                                                                )))
+            else:
+                self.capture_pieces[-1].append(int(math.copysign(
+                                                                (capture_piece - 1 if abs(capture_piece) % 10 == 1 else capture_piece),
+                                                                -1
+                                                                )))
+
+
     def get_playerhand(self):
         while(True):
             csa = list(input("your hand : "))
@@ -254,6 +270,7 @@ class Shogi():
             print("turn : ", self.turn)
             self.board.print_board(self)
             self.get_playerhand()
+            self.apply_capture()
             self.board.update_board(self)
             self.turn += 1
 
