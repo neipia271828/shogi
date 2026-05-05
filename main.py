@@ -15,22 +15,6 @@ import math
 # 飛車70 HI
 # 竜  71 RY
 # 王  80 OU
-[
-    ("FU", 10),
-    ("TO", 11),
-    ("KY", 20),
-    ("NY", 21),
-    ("KE", 30),
-    ("NK", 31),
-    ("GI", 40),
-    ("NG", 41),
-    ("KI", 50),
-    ("KA", 60),
-    ("UM", 61),
-    ("HI", 70),
-    ("RY", 71),
-    ("OU", 80),
-]
 class Shogi():
     class Board:
         board : list = [[ 20,  30,  40,  50,  80,  50,  40,  30,  20],
@@ -71,6 +55,7 @@ class Shogi():
     class Piece:
         x : int = 0
         y : int = 0
+        symbol : int = 0
 
         def check_range(self, num : int) -> bool:
             if not (0 <= num <= 8) :  return False
@@ -83,6 +68,7 @@ class Shogi():
 
             self.x = position[0]
             self.y = position[1]
+            self.symbol = position[2]
 
             return True
 
@@ -216,10 +202,14 @@ class Shogi():
                                             ("OU", 80),
                                         ])
 
-    def make_hand(self, csa : str) -> bool:
-        hand = list(csa)
+    def make_hand(self) -> bool:
+        csa = list(input("your hand : "))
+        hand = csa
         self.start_cell.x = int(hand[1]) - 1
         self.start_cell.y = int(hand[2]) - 1
+
+        self.start_cell.symbol = self.symbol_dict(hand[5] + hand[6])
+
         self.destination_cell.x = int(hand[3]) - 1
         self.destination_cell.y = int(hand[4]) - 1
 
@@ -243,17 +233,25 @@ class Shogi():
     
     def get_dy_as_3bit(self) -> int:
         return 1 if self.get_dy() > 0 else (-1 if self.get_dy() < 0 else 0)
+    
     # True  -> first hand
     # False -> second hand
     def get_side(self) -> bool:
         return self.turn % 2 == 1
     
     def eliminate_choose_zero(self) -> bool:
-        flag : bool = self.board.get_piece_from_start_cell(self) == 0
+        if self.start_cell.x == -1 and self.start_cell.y == -1:
+            if self.start_cell.symbol in self.capture_pieces:
+                return True
+        else:
+            x = self.start_cell.x
+            y = self.start_cell.y
+            if self.board.get_piece_from_any_cell(x, y) == 0: return True
 
-        return True if flag else False
+        return False
     
-    def eliminate_same_owner(self) -> bool:
+    # 自分の駒を取ろうとしてしまう。
+    def eliminate_capture_own_piece(self) -> bool:
         if self.board.get_piece_from_start_cell(self) > 0:
             if self.board.get_piece_from_destination_cell(self) > 0:
                 return True
@@ -262,7 +260,8 @@ class Shogi():
                 return True
         return False
 
-    def eliminate_choose_wrong_piece(self) -> bool:
+    # 自分が所有していない駒を選択してしまう。
+    def eliminate_choose_wrong_owner_piece(self) -> bool:
         piece_val = self.board.get_piece_from_start_cell(self)
         if self.get_side():
             return piece_val <= 0
@@ -307,14 +306,12 @@ class Shogi():
                                                                 -1
                                                                 )))
 
-
     def get_playerhand(self):
         while(True):
-            csa = list(input("your hand : "))
-            if self.make_hand(csa) : continue
+            if self.make_hand() : continue
             if self.eliminate_choose_zero() : continue
-            if self.eliminate_choose_wrong_piece() : continue
-            if self.eliminate_same_owner() : continue
+            if self.eliminate_choose_wrong_owner_piece() : continue
+            if self.eliminate_capture_own_piece() : continue
             if self.movement_verification() : continue
 
             break
